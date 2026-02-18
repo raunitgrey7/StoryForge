@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryForge</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #222222;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e8e6e3;
+            --text-secondary: #a8a6a3;
+            --text-tertiary: #787673;
+            --accent: #8b7355;
+            --accent-hover: #a08568;
+            --border: #333333;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.01) 2px,
+                    rgba(255, 255, 255, 0.01) 4px
+                );
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.03"/></svg>');
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: rgba(26, 26, 26, 0.95);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .project-name {
+            font-size: 18px;
+            font-weight: normal;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+            font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+        }
+
+        .controls {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper select {
+            background-color: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 8px 30px 8px 12px;
+            font-size: 13px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            appearance: none;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .select-wrapper select:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .select-wrapper select:focus {
+            outline: none;
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .select-wrapper::after {
+            content: '▾';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        .select-wrapper select option {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            min-height: 100vh;
+            padding-top: 60px;
+        }
+
+        /* Writing Area */
+        .writing-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 60px 40px;
+            transition: margin-right 0.3s ease;
+        }
+
+        .writing-section.panel-open {
+            margin-right: 380px;
+        }
+
+        .editor-wrapper {
+            width: 100%;
+            max-width: 720px;
+            position: relative;
+        }
+
+        .editor-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .editor-header h1 {
+            font-size: 14px;
+            font-weight: normal;
+            color: var(--text-tertiary);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .suggestion-trigger {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 10px 24px;
+            font-size: 13px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .suggestion-trigger:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .suggestion-trigger:active {
+            transform: translateY(1px);
+        }
+
+        .suggestion-trigger:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .suggestion-trigger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .editor-container {
+            background-color: rgba(34, 34, 34, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 50px;
+            min-height: 600px;
+            position: relative;
+        }
+
+        .editor-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(
+                    transparent 95%,
+                    rgba(255, 255, 255, 0.02) 95%,
+                    rgba(255, 255, 255, 0.02) 100%
+                );
+            background-size: 100% 32px;
+            pointer-events: none;
+            border-radius: 2px;
+        }
+
+        .text-editor {
+            width: 100%;
+            min-height: 500px;
+            background-color: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 18px;
+            line-height: 2;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            resize: vertical;
+            position: relative;
+            z-index: 1;
+        }
+
+        .text-editor:focus {
+            outline: none;
+        }
+
+        .text-editor::placeholder {
+            color: var(--text-tertiary);
+            font-style: italic;
+        }
+
+        /* Word Count */
+        .editor-footer {
+            margin-top: 30px;
+            text-align: right;
+            color: var(--text-tertiary);
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        /* Suggestions Panel */
+        .suggestions-panel {
+            position: fixed;
+            right: -380px;
+            top: 60px;
+            width: 380px;
+            height: calc(100vh - 60px);
+            background-color: rgba(26, 26, 26, 0.98);
+            border-left: 1px solid var(--border);
+            transition: right 0.3s ease;
+            z-index: 99;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .suggestions-panel.open {
+            right: 0;
+        }
+
+        .suggestions-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .suggestions-panel::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        .suggestions-panel::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .suggestions-panel::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        .panel-header {
+            padding: 30px 30px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background-color: rgba(26, 26, 26, 0.98);
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-title {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 15px;
+        }
+
+        .close-panel {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            float: right;
+            transition: color 0.2s ease;
+        }
+
+        .close-panel:hover {
+            color: var(--text-primary);
+        }
+
+        .panel-content {
+            padding: 30px;
+        }
+
+        .suggestion-item {
+            margin-bottom: 35px;
+            padding-bottom: 35px;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.5);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .suggestion-label {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .suggestion-text {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.8;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-note {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            line-height: 1.6;
+            font-style: normal;
+            padding-left: 15px;
+            border-left: 2px solid var(--border);
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: var(--text-tertiary);
+            font-style: italic;
+        }
+
+        .loading-dots {
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .loading-dots::after {
+            content: '.';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% {
+                content: '.';
+            }
+            40% {
+                content: '..';
+            }
+            60%, 100% {
+                content: '...';
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: var(--text-tertiary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            line-height: 1.8;
+            font-style: italic;
+        }
+
+        /* Action Buttons in Suggestions */
+        .suggestion-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-tertiary);
+            padding: 6px 14px;
+            font-size: 11px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            font-family: 'Georgia', serif;
+            border-radius: 2px;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+            background-color: rgba(139, 115, 85, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .writing-section.panel-open {
+                margin-right: 0;
+            }
+
+            .suggestions-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .suggestions-panel.open {
+                right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                padding: 0 20px;
+                height: 50px;
+            }
+
+            .project-name {
+                font-size: 16px;
+                letter-spacing: 1px;
+            }
+
+            .controls {
+                gap: 15px;
+            }
+
+            .select-wrapper select {
+                font-size: 12px;
+                padding: 6px 25px 6px 10px;
+            }
+
+            .writing-section {
+                padding: 30px 20px;
+            }
+
+            .editor-wrapper {
+                max-width: 100%;
+            }
+
+            .editor-container {
+                padding: 30px 20px;
+                min-height: 500px;
+            }
+
+            .text-editor {
+                font-size: 16px;
+                line-height: 1.9;
+                min-height: 400px;
+            }
+
+            .container {
+                padding-top: 50px;
+            }
+
+            .suggestions-panel {
+                top: 50px;
+                height: calc(100vh - 50px);
+            }
+
+            .panel-content {
+                padding: 20px;
+            }
+
+            .suggestion-text {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-bar {
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .select-wrapper select {
+                width: 100%;
+            }
+
+            .container {
+                padding-top: 100px;
+            }
+
+            .suggestions-panel {
+                top: 100px;
+                height: calc(100vh - 100px);
+            }
+        }
+
+        /* Subtle Entrance Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .editor-wrapper {
+            animation: fadeIn 0.6s ease;
+        }
+
+        /* Selection Styling */
+        ::selection {
+            background-color: rgba(139, 115, 85, 0.3);
+            color: var(--text-primary);
+        }
+
+        ::-moz-selection {
+            background-color: rgba(139, 115, 85, 0.3);
+            color: var(--text-primary);
+        }
+
+        /* Additional Visual Polish */
+        .divider {
+            height: 1px;
+            background: linear-gradient(
+                to right,
+                transparent,
+                var(--border) 20%,
+                var(--border) 80%,
+                transparent
+            );
+            margin: 40px 0;
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            font-size: 11px;
+            color: var(--text-tertiary);
+            letter-spacing: 1px;
+            z-index: 50;
+            padding: 8px 16px;
+            background-color: rgba(26, 26, 26, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-indicator.visible {
+            opacity: 1;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            margin-right: 8px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* Refinements for Better Typography */
+        .text-editor {
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Additional Panel States */
+        .suggestion-item.highlighting {
+            background-color: rgba(139, 115, 85, 0.05);
+            margin: 0 -15px 35px;
+            padding: 20px 15px 35px;
+            border-radius: 2px;
+        }
+
+        /* Keyboard Shortcut Hints */
+        .shortcut-hint {
+            font-size: 10px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+            opacity: 0.7;
+        }
+
+        /* Form-Specific Styling Hints */
+        .text-editor.poetry-mode {
+            line-height: 2.2;
+            white-space: pre-wrap;
+        }
+
+        .text-editor.experimental-mode {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Genre Badge */
+        .genre-badge {
+            display: inline-block;
+            font-size: 10px;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 4px 10px;
+            border-radius: 2px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-left: 10px;
+            opacity: 0.6;
+        }
+
+        /* Enhanced Focus Mode */
+        body.focus-mode .top-bar {
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        body.focus-mode .top-bar:hover {
+            opacity: 1;
+        }
+
+        body.focus-mode .editor-footer {
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+
+        body.focus-mode .editor-footer:hover {
+            opacity: 1;
+        }
+
+        /* Tooltip System */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            font-size: 11px;
+            white-space: nowrap;
+            border-radius: 2px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            border: 1px solid var(--border);
+            z-index: 1000;
+        }
+
+        [data-tooltip]:hover::after {
+            opacity: 1;
+        }
+
+        /* Accessibility Improvements */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Print Styles */
+        @media print {
+            body::before,
+            body::after,
+            .top-bar,
+            .suggestions-panel,
+            .editor-footer,
+            .status-indicator {
+                display: none;
+            }
+
+            .writing-section {
+                margin: 0;
+                padding: 0;
+            }
+
+            .editor-container {
+                border: none;
+                background: white;
+            }
+
+            .text-editor {
+                color: black;
+            }
+        }
+
+        /* Dark Mode Enhancement */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #0f0f0f;
+            }
+        }
+
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="top-bar">
+        <div class="project-name">STORYFORGE</div>
+        <nav class="controls">
+            <div class="select-wrapper">
+                <label for="form-select" class="visually-hidden">Select Form</label>
+                <select id="form-select">
+                    <option value="story">Story</option>
+                    <option value="poem">Poem</option>
+                    <option value="experimental">Experimental</option>
+                </select>
+            </div>
+            <div class="select-wrapper">
+                <label for="genre-select" class="visually-hidden">Select Genre</label>
+                <select id="genre-select">
+                    <option value="">Genre</option>
+                    <option value="literary">Literary Fiction</option>
+                    <option value="mystery">Mystery</option>
+                    <option value="thriller">Thriller</option>
+                    <option value="scifi">Science Fiction</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="historical">Historical</option>
+                    <option value="romance">Romance</option>
+                    <option value="horror">Horror</option>
+                    <option value="contemporary">Contemporary</option>
+                    <option value="magical-realism">Magical Realism</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Writing Section -->
+        <main class="writing-section" id="writingSection">
+            <div class="editor-wrapper">
+                <div class="editor-header">
+                    <h1>Your Canvas</h1>
+                    <button class="suggestion-trigger" id="suggestBtn" data-tooltip="Generate thoughtful suggestions">
+                        What could happen next?
+                    </button>
+                </div>
+
+                <div class="editor-container">
+                    <label for="textEditor" class="visually-hidden">Write your story here</label>
+                    <textarea 
+                        class="text-editor" 
+                        id="textEditor" 
+                        placeholder="Begin writing..."
+                        spellcheck="true"
+                        aria-label="Main text editor"
+                    ></textarea>
+                </div>
+
+                <div class="editor-footer">
+                    <span id="wordCount">0 words</span>
+                    <span style="margin: 0 15px; opacity: 0.3;">•</span>
+                    <span id="charCount">0 characters</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Suggestions Panel -->
+        <aside class="suggestions-panel" id="suggestionsPanel" aria-label="AI suggestions panel">
+            <div class="panel-header">
+                <button class="close-panel" id="closePanel" aria-label="Close suggestions panel">&times;</button>
+                <div class="panel-title">Suggestions</div>
+            </div>
+            <div class="panel-content" id="panelContent">
+                <div class="empty-state">
+                    <div class="empty-state-icon">✎</div>
+                    <div class="empty-state-text">
+                        Your suggestions will appear here,<br>
+                        like notes in the margin of a manuscript.
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="status-indicator" id="statusIndicator">
+        <span class="status-dot"></span>
+        <span id="statusText">Ready</span>
+    </div>
+
+    <script>
+        // Element References
+        const textEditor = document.getElementById('textEditor');
+        const suggestBtn = document.getElementById('suggestBtn');
+        const suggestionsPanel = document.getElementById('suggestionsPanel');
+        const writingSection = document.getElementById('writingSection');
+        const closePanel = document.getElementById('closePanel');
+        const panelContent = document.getElementById('panelContent');
+        const wordCount = document.getElementById('wordCount');
+        const charCount = document.getElementById('charCount');
+        const formSelect = document.getElementById('form-select');
+        const genreSelect = document.getElementById('genre-select');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+
+        // State
+        let isGenerating = false;
+
+        // Word Count Update
+        function updateWordCount() {
+            const text = textEditor.value.trim();
+            const words = text === '' ? 0 : text.split(/\s+/).length;
+            const chars = textEditor.value.length;
+
+            wordCount.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+            charCount.textContent = `${chars} character${chars !== 1 ? 's' : ''}`;
+        }
+
+        textEditor.addEventListener('input', updateWordCount);
+
+        // Form Selection
+        formSelect.addEventListener('change', function() {
+            textEditor.classList.remove('poetry-mode', 'experimental-mode');
+            
+            if (this.value === 'poem') {
+                textEditor.classList.add('poetry-mode');
+                textEditor.placeholder = 'Let the lines breathe...';
+            } else if (this.value === 'experimental') {
+                textEditor.classList.add('experimental-mode');
+                textEditor.placeholder = 'Break the boundaries...';
+            } else {
+                textEditor.placeholder = 'Begin writing...';
+            }
+        });
+
+        // Status Indicator
+        function showStatus(message, duration = 2000) {
+            statusText.textContent = message;
+            statusIndicator.classList.add('visible');
+            
+            setTimeout(() => {
+                statusIndicator.classList.remove('visible');
+            }, duration);
+        }
+
+        // Open Suggestions Panel
+        function openSuggestionsPanel() {
+            suggestionsPanel.classList.add('open');
+            writingSection.classList.add('panel-open');
+        }
+
+        // Close Suggestions Panel
+        function closeSuggestionsPanel() {
+            suggestionsPanel.classList.remove('open');
+            writingSection.classList.remove('panel-open');
+        }
+
+        closePanel.addEventListener('click', closeSuggestionsPanel);
+
+        // Generate Suggestions (Mock Implementation)
+        async function generateSuggestions() {
+            if (isGenerating) return;
+
+            const currentText = textEditor.value.trim();
+            if (currentText.length < 50) {
+                showStatus('Write a bit more before requesting suggestions');
+                return;
+            }
+
+            isGenerating = true;
+            suggestBtn.disabled = true;
+            openSuggestionsPanel();
+
+            // Show loading state
+            panelContent.innerHTML = `
+                <div class="loading-state">
+                    Considering possibilities<span class="loading-dots"></span>
+                </div>
+            `;
+
+            // Simulate AI processing
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate mock suggestions based on form and genre
+            const form = formSelect.value;
+            const genre = genreSelect.value || 'literary';
+
+            const suggestions = generateMockSuggestions(form, genre, currentText);
+
+            displaySuggestions(suggestions);
+
+            isGenerating = false;
+            suggestBtn.disabled = false;
+            showStatus('Suggestions ready');
+        }
+
+        // Generate Mock Suggestions
+        function generateMockSuggestions(form, genre, text) {
+            const wordCount = text.split(/\s+/).length;
+            
+            const suggestions = [];
+
+            if (form === 'story') {
+                suggestions.push({
+                    label: 'Narrative Direction',
+                    text: 'Consider introducing a moment of quiet reflection here, allowing the character to process what has transpired before the tension rises again.',
+                    note: 'This pause could deepen the emotional resonance and give readers space to connect with the character\'s inner world.'
+                });
+
+                suggestions.push({
+                    label: 'Character Development',
+                    text: 'What if this character\'s past experience with betrayal influences their reaction in this moment?',
+                    note: 'A brief internal monologue or physical gesture could hint at unresolved wounds, adding layers to their decision-making.'
+                });
+
+                if (wordCount > 200) {
+                    suggestions.push({
+                        label: 'Scene Transition',
+                        text: 'The pacing feels contemplative. You might consider a sudden shift in atmosphere or an unexpected arrival to propel the story forward.',
+                        note: 'Contrast can create memorable moments and maintain narrative momentum.'
+                    });
+                }
+            } else if (form === 'poem') {
+                suggestions.push({
+                    label: 'Imagery',
+                    text: 'The visual elements are strong. Consider incorporating sound or texture to engage additional senses.',
+                    note: 'Multi-sensory imagery can transform observation into experience.'
+                });
+
+                suggestions.push({
+                    label: 'Rhythm',
+                    text: 'This stanza might benefit from varying line length to mirror the emotional ebb and flow of the subject.',
+                    note: 'Form can echo content, creating a more unified aesthetic experience.'
+                });
+            } else {
+                suggestions.push({
+                    label: 'Structure',
+                    text: 'The fragmented approach is compelling. What if you pushed the syntax further, letting white space carry as much meaning as the words?',
+                    note: 'In experimental work, absence can speak as loudly as presence.'
+                });
+
+                suggestions.push({
+                    label: 'Conceptual Layer',
+                    text: 'Consider how the physical layout on the page might reinforce or subvert the text\'s meaning.',
+                    note: 'The visual dimension can become an integral part of the reader\'s interpretation.'
+                });
+            }
+
+            return suggestions;
+        }
+
+        // Display Suggestions
+        function displaySuggestions(suggestions) {
+            if (suggestions.length === 0) {
+                panelContent.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <div class="empty-state-text">
+                            Your writing flows naturally.<br>
+                            Continue as inspiration guides you.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const suggestionsHTML = suggestions.map((suggestion, index) => `
+                <div class="suggestion-item">
+                    <span class="suggestion-label">${suggestion.label}</span>
+                    <div class="suggestion-text">${suggestion.text}</div>
+                    ${suggestion.note ? `<div class="suggestion-note">${suggestion.note}</div>` : ''}
+                </div>
+            `).join('');
+
+            panelContent.innerHTML = suggestionsHTML;
+        }
+
+        // Event Listeners
+        suggestBtn.addEventListener('click', generateSuggestions);
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Cmd/Ctrl + K to trigger suggestions
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                generateSuggestions();
+            }
+
+            // Escape to close panel
+            if (e.key === 'Escape' && suggestionsPanel.classList.contains('open')) {
+                closeSuggestionsPanel();
+            }
+
+            // Cmd/Ctrl + Shift + F for focus mode
+            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'F') {
+                e.preventDefault();
+                document.body.classList.toggle('focus-mode');
+                showStatus(document.body.classList.contains('focus-mode') ? 'Focus mode enabled' : 'Focus mode disabled');
+            }
+        });
+
+        // Auto-save to localStorage
+        let saveTimeout;
+        textEditor.addEventListener('input', function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                localStorage.setItem('storyforge_draft', textEditor.value);
+                localStorage.setItem('storyforge_form', formSelect.value);
+                localStorage.setItem('storyforge_genre', genreSelect.value);
+                showStatus('Draft saved', 1000);
+            }, 1000);
+        });
+
+        // Load from localStorage on page load
+        window.addEventListener('load', function() {
+            const savedDraft = localStorage.getItem('storyforge_draft');
+            const savedForm = localStorage.getItem('storyforge_form');
+            const savedGenre = localStorage.getItem('storyforge_genre');
+
+            if (savedDraft) {
+                textEditor.value = savedDraft;
+                updateWordCount();
+            }
+
+            if (savedForm) {
+                formSelect.value = savedForm;
+                formSelect.dispatchEvent(new Event('change'));
+            }
+
+            if (savedGenre) {
+                genreSelect.value = savedGenre;
+            }
+
+            // Focus editor
+            textEditor.focus();
+        });
+
+        // Handle beforeunload
+        window.addEventListener('beforeunload', function(e) {
+            if (textEditor.value.trim().length > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Initialize
+        updateWordCount();
+        showStatus('Ready to write', 1500);
+    </script>
+</body>
+</html>
