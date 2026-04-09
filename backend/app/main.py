@@ -8,6 +8,7 @@ import os
 
 from app.api import write, story, health
 from app.core.config import settings
+from app.services.story_repository import init_db
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
@@ -43,7 +44,12 @@ app.mount(
 # -----------------------------
 app.include_router(health.router, prefix="/api")
 app.include_router(story.router, prefix="/api/story")
-app.include_router(write.router, prefix="/api/write")
+app.include_router(write.router)
+
+
+@app.on_event("startup")
+def on_startup():
+    init_db()
 
 # -----------------------------
 # Root → index.html
