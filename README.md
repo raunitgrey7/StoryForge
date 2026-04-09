@@ -80,6 +80,12 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+If you run from the project root (without `cd backend`), use:
+
+```bash
+uvicorn --app-dir backend app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
 3. Open in browser:
 
 - App: `http://localhost:8000/`
@@ -106,9 +112,13 @@ This project can be deployed as a single Render Web Service (backend serves fron
 1. Push this repo to GitHub.
 2. In Render, click New + -> Web Service.
 3. Connect your repository.
-4. Configure service:
-	 - Root Directory: `backend`
+4. Configure service (recommended, keeps paths simple):
+	 - Root Directory: leave empty (repo root)
 	 - Runtime: `Python 3`
+	 - Build Command: `pip install -r backend/requirements.txt`
+	 - Start Command: `uvicorn --app-dir backend app.main:app --host 0.0.0.0 --port $PORT`
+
+Alternative: if you set Root Directory to `backend`, then keep:
 	 - Build Command: `pip install -r requirements.txt`
 	 - Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 5. Add environment variables in Render:
@@ -136,3 +146,4 @@ Troubleshooting
 - If `/suggest` fails: verify at least one `GOOGLE_API_KEY_*` is set.
 - If app boots but no UI: ensure `frontend/index.html` exists at repo root.
 - If `.env` values do not load locally: verify you installed all packages from `requirements.txt` and run from `backend` directory.
+- If `app.main:app` only works after `cd backend`: run Uvicorn with `--app-dir backend` from root.
