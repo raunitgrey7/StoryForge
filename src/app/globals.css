@@ -1,0 +1,449 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   StoryForge design tokens
+   Concept: an observatory at dusk. Deep violet-indigo chrome, a warm
+   luminous page, starlight gold for actions, aurora teal for the companion.
+   ------------------------------------------------------------------ */
+
+:root {
+  --bg: #f4f1fb;
+  --bg-deep: #e9e4f6;
+  --surface: #ffffff;
+  --surface-2: #f8f6fd;
+  --page: #fffdf8;
+  --ink: #1b1740;
+  --ink-2: #4b4570;
+  --ink-3: #8a84ad;
+  --line: #ddd7ee;
+  --line-2: #cbc3e6;
+  --gold: #c9971c;
+  --gold-2: #f2c14e;
+  --gold-ink: #2a1f02;
+  --aurora: #0f9d84;
+  --aurora-2: #5ee0c4;
+  --ember: #d9553c;
+  --lilac: #7c6fcd;
+  --shadow: 0 24px 60px -30px rgba(27, 23, 64, 0.35);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #120f2a;
+  --bg-deep: #0c0a1f;
+  --surface: #1b1740;
+  --surface-2: #221d4f;
+  --page: #f8f4ea;
+  --ink: #ede8ff;
+  --ink-2: #b9b1e0;
+  --ink-3: #7f78ab;
+  --line: #2c2660;
+  --line-2: #3a3378;
+  --gold: #e8b84a;
+  --gold-2: #f6d27a;
+  --gold-ink: #241a02;
+  --aurora: #5ee0c4;
+  --aurora-2: #9cf1de;
+  --ember: #ff7a59;
+  --lilac: #a79bd6;
+  --shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-deep: var(--bg-deep);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-page: var(--page);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-gold: var(--gold);
+  --color-gold-2: var(--gold-2);
+  --color-gold-ink: var(--gold-ink);
+  --color-aurora: var(--aurora);
+  --color-aurora-2: var(--aurora-2);
+  --color-ember: var(--ember);
+  --color-lilac: var(--lilac);
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-ui: var(--font-instrument), system-ui, sans-serif;
+  --radius-lg: var(--radius);
+  --radius-sm: var(--radius-sm);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--gold) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--aurora);
+  outline-offset: 2px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Thin, quiet scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+}
+
+/* ---------- Editor prose ---------- */
+
+.sf-prose {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-variation-settings: "opsz" 12, "SOFT" 30, "WONK" 0;
+  color: #221c3d;
+  font-size: 1.16rem;
+  line-height: 1.72;
+  caret-color: var(--gold);
+}
+
+.sf-prose:focus {
+  outline: none;
+}
+
+.sf-prose > * + * {
+  margin-top: 0.9em;
+}
+
+.sf-prose p {
+  margin: 0;
+}
+
+.sf-prose p + p {
+  margin-top: 0.9em;
+}
+
+.sf-prose h1,
+.sf-prose h2,
+.sf-prose h3 {
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variation-settings: "opsz" 72, "SOFT" 50, "WONK" 1;
+}
+
+.sf-prose h1 {
+  font-size: 2.1rem;
+  margin-top: 1.4em;
+}
+.sf-prose h2 {
+  font-size: 1.6rem;
+  margin-top: 1.4em;
+}
+.sf-prose h3 {
+  font-size: 1.3rem;
+  margin-top: 1.2em;
+}
+
+.sf-prose blockquote {
+  border-left: 3px solid var(--gold);
+  margin: 1em 0;
+  padding: 0.2em 0 0.2em 1.1em;
+  color: #4b4570;
+  font-style: italic;
+}
+
+.sf-prose ul,
+.sf-prose ol {
+  padding-left: 1.4em;
+}
+
+.sf-prose hr {
+  border: 0;
+  height: 1px;
+  margin: 2em auto;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, #b8ad88, transparent);
+}
+
+.sf-prose code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+  background: rgba(27, 23, 64, 0.06);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.sf-prose p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: #a39dbd;
+  font-style: italic;
+}
+
+/* Craft-specific page rhythms */
+.sf-prose[data-craft="poetry"],
+.sf-prose[data-craft="lyrics"] {
+  font-size: 1.22rem;
+  line-height: 1.9;
+}
+.sf-prose[data-craft="poetry"] p + p,
+.sf-prose[data-craft="lyrics"] p + p {
+  margin-top: 0.15em;
+}
+
+.sf-prose[data-craft="screenplay"] {
+  font-family: "Courier Prime", "Courier New", monospace;
+  font-variation-settings: normal;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sf-prose[data-craft="blog"],
+.sf-prose[data-craft="newsletter"],
+.sf-prose[data-craft="essay"] {
+  font-family: var(--font-instrument), system-ui, sans-serif;
+  font-variation-settings: normal;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+/* Typewriter focus mode: dim everything but the active paragraph */
+.sf-focus .sf-prose > *:not(.has-focus) {
+  opacity: 0.28;
+  transition: opacity 240ms ease;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes sf-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sf-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.sf-enter {
+  animation: sf-fade-up 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.sf-streaming::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: var(--aurora);
+  animation: sf-pulse 900ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Hover explanations ----------
+   Any element with data-tip explains itself on hover and keyboard focus.
+   data-tip-side="bottom" flips it under the element. */
+
+[data-tip] {
+  position: relative;
+}
+
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translate(-50%, 4px);
+  width: max-content;
+  max-width: 260px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 450;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: none;
+  white-space: normal;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  /* display:none while hidden so the tooltip never adds scrollable overflow */
+  display: none;
+  pointer-events: none;
+  z-index: 80;
+}
+
+@keyframes sf-tip {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+[data-tip]:hover::after,
+[data-tip]:focus-visible::after {
+  display: block;
+  animation: sf-tip 140ms ease 380ms both;
+}
+
+[data-tip][data-tip-side="bottom"]::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+  transform: translate(-50%, -4px);
+}
+[data-tip][data-tip-side="bottom"]:hover::after,
+[data-tip][data-tip-side="bottom"]:focus-visible::after {
+  transform: translate(-50%, 0);
+}
+
+/* Aligned variants for elements near a container's edge. */
+@keyframes sf-tip-y {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+[data-tip][data-tip-align="start"]::after {
+  left: 0;
+  transform: none;
+}
+[data-tip][data-tip-align="end"]::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+[data-tip][data-tip-align="start"]:hover::after,
+[data-tip][data-tip-align="start"]:focus-visible::after,
+[data-tip][data-tip-align="end"]:hover::after,
+[data-tip][data-tip-align="end"]:focus-visible::after {
+  animation-name: sf-tip-y;
+}
+
+[data-tip][data-tip-side="right"]::after {
+  left: calc(100% + 8px);
+  bottom: auto;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+[data-tip][data-tip-side="left"]::after {
+  left: auto;
+  right: calc(100% + 8px);
+  bottom: auto;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
+@media (hover: none) {
+  [data-tip]::after {
+    display: none;
+  }
+}
+
+/* ---------- Book feel ---------- */
+
+/* A faint paper grain on the page. */
+.sf-page {
+  background-color: var(--page);
+  background-image:
+    radial-gradient(1200px 400px at 50% -10%, rgba(201, 151, 28, 0.06), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(27, 23, 64, 0.012) 0 1px, transparent 1px 3px);
+}
+
+/* Drop cap on the first paragraph of fiction, like the first page of a chapter. */
+.sf-prose[data-craft="novel"] > p:first-of-type::first-letter,
+.sf-prose[data-craft="short"] > p:first-of-type::first-letter,
+.sf-prose[data-craft="romance"] > p:first-of-type::first-letter,
+.sf-prose[data-craft="fanfic"] > p:first-of-type::first-letter,
+.sf-prose[data-craft="children"] > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.6em;
+  line-height: 0.82;
+  padding: 0.08em 0.1em 0 0;
+  font-weight: 500;
+  color: var(--gold);
+  font-variation-settings: "opsz" 144, "SOFT" 80, "WONK" 1;
+}
+
+/* Companion output reads like a note in the margin, not a chat bubble. */
+.sf-note {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-variation-settings: "opsz" 12, "SOFT" 30;
+  font-size: 15px;
+  line-height: 1.65;
+  border-left: 2px solid var(--gold);
+  padding-left: 14px;
+}
+
+/* Paragraph being read aloud */
+.sf-prose .is-spoken {
+  background: color-mix(in oklab, var(--gold) 18%, transparent);
+  border-radius: 6px;
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--gold) 18%, transparent);
+}
+
+/* Small utilities */
+.sf-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.sf-kbd {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1px solid var(--line-2);
+  color: var(--ink-3);
+  background: var(--surface-2);
+}

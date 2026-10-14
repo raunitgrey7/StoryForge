@@ -1,21 +1,20 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# env
 .env
-*.env
-backend/.env
+.env.*
+!.env.example
 
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
+# vercel
+.vercel/
 
-# Virtual environments
-.venv/
-venv/
-
-# Local runtime data
-storyforge.db
-*.db
-
-# Editor/system
+# misc
 .DS_Store
-Thumbs.db
+npm-debug.log*
